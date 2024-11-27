@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+      - image: postgres:15-alpine
+        name: postgres
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+        resources:
+          requests:
+            memory: "512Mi"        # Minimum memory allocated to the container
+            cpu: "500m"            # Minimum CPU allocated (500m = 0.5 CPU core)
+          limits:
+            memory: "1Gi"          # Maximum memory the container can use
+            cpu: "1"               # Maximum CPU the container can use (1 core)
+      volumes:
+      - name: db-data
+        emptyDir: {}
