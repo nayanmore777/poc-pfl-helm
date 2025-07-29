@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          path: /home/git-actions
+          path: /home/runner/work/voters-app/voters-app
 
       - name: Verify Helm installation
         run: |
