@@ -3,7 +3,7 @@ name: Helm Deployment Pipeline
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code from master branch
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
           path: /home/git-actions
 
       - name: Verify Helm installation
