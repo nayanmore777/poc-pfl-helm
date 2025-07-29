@@ -1,0 +1,51 @@
+name: Helm Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pre-clone setup
+        run: |
+          echo "Switching to superuser..."
+          sudo su
+          echo "Creating directory /home/git-actions if it doesn't exist"
+          sudo mkdir -p /home/git-actions
+          sudo chown $USER:$USER /home/git-actions
+
+      - name: Checkout code from master branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: /home/git-actions
+
+      - name: Verify Helm installation
+        run: |
+          if ! command -v helm &> /dev/null; then
+            echo "Helm not found. Installing Helm..."
+            curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          else
+            echo "Helm is already installed."
+          fi
+          helm version
+
+      - name: Update kubeconfig
+        run: |
+          echo "Updating kubeconfig..."
+          # Example command - update as per your cluster context
+          aws eks update-kubeconfig --region us-east-1 --name your-cluster-name
+
+      - name: Deploy Helm chart
+        run: |
+          echo "Deploying Helm chart..."
+          helm upgrade --install my-release ./chart-path --namespace default
+
+      - name: Cleanup workspace
+        run: |
+          echo "Cleaning up..."
+          rm -rf /home/git-actions/*
