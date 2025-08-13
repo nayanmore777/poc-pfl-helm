@@ -5,11 +5,20 @@ on:
     branches:
       - main
 
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: atlas-dc-eks-cluster
+  HELM_RELEASE_NAME: my-release
+  HELM_NAMESPACE: atlas
+  BASTION_HOST: 3.110.134.202
+  BASTION_USER: ec2-user
+  HELM_CHART_PATH: ./poc-pfl-helm   # path in your repo to the Helm chart
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout your current repo
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -20,27 +29,43 @@ jobs:
       - name: Copy Helm chart to Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 3.110.134.202
-          username: ec2-user
+          host: ${{ env.BASTION_HOST }}
+          username: ${{ env.BASTION_USER }}
           key: ${{ secrets.BASTION_SSH_KEY }}
-          source: templates
-          target: /home/ec2-user/deploy
+          source: ${{ env.HELM_CHART_PATH }}
+          target: /home/${{ env.BASTION_USER }}/deploy
+          rm: true
+          recursive: true
 
       # Step 3: SSH into Bastion & Deploy Helm chart
       - name: Deploy Helm chart on Bastion
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 3.110.134.202
-          username: ec2-user
+          host: ${{ env.BASTION_HOST }}
+          username: ${{ env.BASTION_USER }}
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
-            set -e
-            cd /home/ec2-user/deploy/
+            set -euxo pipefail
+
+            cd /home/${{ env.BASTION_USER }}/deploy/poc-pfl-helm
+
             # Install Helm if missing
             if ! command -v helm &> /dev/null; then
               curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
             fi
-            # Update kubeconfig
-            aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
+
+            # Update kubeconfig for EKS
+            aws eks update-kubeconfig \
+              --region ${{ env.AWS_REGION }} \
+              --name ${{ env.EKS_CLUSTER_NAME }}
+
+            # Ensure dependencies are updated
+            helm dependency update .
+
             # Deploy chart
-            helm upgrade --install my-release ./templates --namespace atlas --create-namespace
+            helm upgrade --install \
+              ${{ env.HELM_RELEASE_NAME }} . \
+              --namespace ${{ env.HELM_NAMESPACE }} \
+              --create-namespace \
+              --wait \
+              --timeout 5m
