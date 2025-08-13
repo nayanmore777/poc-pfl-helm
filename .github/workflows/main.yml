@@ -9,18 +9,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout repo
+      # Step 1: Checkout your current repo
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          repository: nayanmore777/poc-pfl-helm
+          ref: main
 
       # Step 2: Copy atlas folder to Bastion
       - name: Copy Helm manifests to Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
           host: 58.0.34.56
-          username: ec2-user  # Change if different
+          username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
-          source: ./atlas
+          source: atlas
           target: /home/ec2-user/deploy
 
       # Step 3: SSH into Bastion & Deploy Helm chart
@@ -28,19 +31,19 @@ jobs:
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: 58.0.34.56
-          username: ec2-user  # Change if different
+          username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
             set -e
             cd /home/ec2-user/deploy/atlas
 
-            # Install Helm if not already installed
+            # Install Helm if missing
             if ! command -v helm &> /dev/null; then
               curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
             fi
 
-            # Update kubeconfig for EKS cluster
+            # Update kubeconfig
             aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
 
-            # Deploy Helm chart
-            helm upgrade --install atlas-helm . --namespace atlas --create-namespace
+            # Deploy chart
+            helm upgrade --install my-release . --namespace atlas --create-namespace
