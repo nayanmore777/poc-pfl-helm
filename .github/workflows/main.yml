@@ -5,67 +5,52 @@ on:
     branches:
       - main
 
-env:
-  AWS_REGION: ap-south-1
-  EKS_CLUSTER_NAME: atlas-dc-eks-cluster
-  HELM_RELEASE_NAME: my-release
-  HELM_NAMESPACE: atlas
-  BASTION_HOST: 3.110.134.202
-  BASTION_USER: ec2-user
-  HELM_CHART_PATH: ./poc-pfl-helm   # path in your repo to the Helm chart
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout your current repo
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           repository: nayanmore777/poc-pfl-helm
           ref: main
 
-      # Step 2: Copy Helm chart to Bastion
+      # Step 2.1: Remove old templates folder on Bastion
+      - name: Remove old templates folder
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 3.110.134.202
+          username: ec2-user
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          script: |
+            rm -rf /home/ec2-user/deploy/templates
+
+      # Step 2.2: Copy Helm chart to Bastion
       - name: Copy Helm chart to Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ env.BASTION_HOST }}
-          username: ${{ env.BASTION_USER }}
+          host: 3.110.134.202
+          username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
-          source: ${{ env.HELM_CHART_PATH }}
-          target: /home/${{ env.BASTION_USER }}/deploy
-          rm: true
-          recursive: true
+          source: templates
+          target: /home/ec2-user/deploy
 
       # Step 3: SSH into Bastion & Deploy Helm chart
       - name: Deploy Helm chart on Bastion
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ env.BASTION_HOST }}
-          username: ${{ env.BASTION_USER }}
+          host: 3.110.134.202
+          username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
-            set -euxo pipefail
-
-            cd /home/${{ env.BASTION_USER }}/deploy/poc-pfl-helm
-
+            set -e
+            cd /home/ec2-user/deploy/
             # Install Helm if missing
             if ! command -v helm &> /dev/null; then
               curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
             fi
-
-            # Update kubeconfig for EKS
-            aws eks update-kubeconfig \
-              --region ${{ env.AWS_REGION }} \
-              --name ${{ env.EKS_CLUSTER_NAME }}
-
-            # Ensure dependencies are updated
-            helm dependency update .
-
+            # Update kubeconfig
+            aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
             # Deploy chart
-            helm upgrade --install \
-              ${{ env.HELM_RELEASE_NAME }} . \
-              --namespace ${{ env.HELM_NAMESPACE }} \
-              --create-namespace \
-              --wait \
-              --timeout 5m
+            helm upgrade --install my-release ./templates --namespace atlas --create-namespace
