@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-svc # Service Name
+  namespace: atlas # Service Namespace
+  annotations: {}
+spec:
+  selector:
+    app: auth # Map the Service with the specified selected Pods
+  type: ClusterIP # Internal Service to be used by other PODs / Services only.
+  ports:
+    - name: auth-svc-port # Name of the PORT
+      port: 8080 # Service Port Number
+      targetPort: auth-port # Redirect to Application PORT
+      protocol: TCP # TCP Protocol

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devportal-svc # Service Name
+  namespace: atlas # Service Namespace
+spec:
+  selector:
+    app: devportal # Map the Service with the specified selected Pods
+  type: ClusterIP # Internal Service to be used by other PODs / Services only.
+  ports:
+    - name: devportal-svc-port # Name of the PORT
+      port: 8087 # Service Port Number
+      targetPort: devportal-port # Redirect to Application PORT
+      protocol: TCP # TCP Protocol

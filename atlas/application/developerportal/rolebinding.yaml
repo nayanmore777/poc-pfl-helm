@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devportal-rb
+  namespace: atlas
+subjects:
+  - kind: ServiceAccount
+    name: devportal-sa
+    namespace: atlas
+roleRef:
+  kind: Role
+  name: devportal-role
+  apiGroup: ""

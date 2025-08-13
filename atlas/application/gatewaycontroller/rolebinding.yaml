@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gc-rb
+  namespace: atlas
+subjects:
+  - kind: ServiceAccount
+    name: gc-sa
+    namespace: atlas
+roleRef:
+  kind: Role
+  name: gc-role
+  apiGroup: ""

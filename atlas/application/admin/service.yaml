@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-svc # Service Name
+  namespace: atlas # Service Namespace
+  annotations: {}
+spec:
+  selector:
+    app: admin # Map the Service with the specified selected Pods
+  type: ClusterIP # Internal Service to be used by other PODs / Services only.
+  ports:
+    - name: admin-svc-port # Name of the PORT
+      port: 8081 # Service Port Number
+      targetPort: admin-port # Redirect to Application PORT
+      protocol: TCP # TCP Protocol

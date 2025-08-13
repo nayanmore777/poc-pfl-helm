@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-rb
+  namespace: atlas
+subjects:
+  - kind: ServiceAccount
+    name: vault-sa
+    namespace: atlas
+roleRef:
+  kind: Role
+  name: vault-role
+  apiGroup: ""

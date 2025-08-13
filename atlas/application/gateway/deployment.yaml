@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: gateway-depl
+  name: gateway-depl
+  namespace: atlas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              key: NODE_ENV
+              name: atlas-configmap
+        - name: TIMEZONE
+          valueFrom:
+            configMapKeyRef:
+              key: TIMEZONE
+              name: atlas-configmap
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          valueFrom:
+            configMapKeyRef:
+              key: NODE_TLS_REJECT_UNAUTHORIZED
+              name: atlas-configmap
+        - name: REDIS_ENABLED
+          value: '0'
+        - name: GATEWAY_AGENT_ID
+          value: 35927577-ce64-4af1-843e-265f48c78f94
+        - name: GATEWAY_CLIENT_ID
+          value: eLQmKJbCkfShaGILWhECUPiCdaicGHYQMNRL
+        - name: GATEWAY_CLIENT_SECRET
+          value: OYeZFViSLIckJnaCNQbEhEiTKflnSACigSLAejHOIXXkMZELDb
+        - name: CLIENT_CONNECTION_ENDPOINT
+          value: ws://gc-svc.atlas.svc.cluster.local:8086/gatewaycontroller-ws
+        - name: FLUENT_BIT_TCP_HOST
+          value: fluent-bit.atlas.svc.cluster.local
+        - name: FLUENT_BIT_TCP_PORT
+          value: '5170'
+        - name: PORT
+          value: '443'
+        - name: SERVICE_NAME
+          value: APIGATEWAY
+        - name: SERVICE_VERSION
+          value: v1010.0.0
+        - name: CORE_VERSION
+          value: v3000.0.20
+        image: 911167904591.dkr.ecr.ap-south-1.amazonaws.com/atlas-api-manager-gateway-service:c-v3000.0.20-s-v1010.0.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /api-gateway/internal/health-check
+            port: 443
+          initialDelaySeconds: 2
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: gateway-app
+        ports:
+        - containerPort: 443
+          name: gateway-port
+        readinessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /api-gateway/internal/health-check
+            port: 443
+          initialDelaySeconds: 2
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+      restartPolicy: Always
+      serviceAccountName: gateway-sa

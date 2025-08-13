@@ -1,0 +1,22 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gc-hpa # HPA Name
+  namespace: atlas # HPA Namespace
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gc-depl # Deployment Name to Scale the Selected Deployment
+  minReplicas: 1 # Min. Number of Replicas
+  maxReplicas: 2 # Max. Number of Replicas
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300 # Number of seconds after which Scale In occurs
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60

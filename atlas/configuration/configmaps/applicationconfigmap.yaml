@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atlas-configmap # ConfigMap Name
+  namespace: atlas # ConfigMap Namespace
+data: # ConfigMap Data
+  NODE_ENV: development
+  TIMEZONE: "+05:30"
+  NODE_TLS_REJECT_UNAUTHORIZED: "0"
+  TZ: "Asia/Calcutta"
+  WEB_SOCKET_PORT: "8086"
+  AIAGENT_CONTROLLER_WEB_SOCKET_PORT: "8091"
+
+  CORS_ORIGINS: "*"
+  ALLOWED_HOSTNAMES: ""
+  GLOBAL_RATE_LIMIT_WINDOW_MS: "1000"
+  GLOBAL_RATE_LIMIT: "1000"
+  TRUST_PROXY: "0"
+
+  DB_DIALECT: "mysql"
+  DB_HOST: "atlas-dc-rds-instance.cluster-cniqgsks23r7.ap-south-1.rds.amazonaws.com"
+  DB_NAME: atlas
+  DB_PORT: "3306"
+  DB_SSL_REJECTUNAUTHORIZED: "0"
+  DB_SCHEMA: ""
+  DB_SSL_DISABLED: "0"
+  DB_SYNC_ENABLED: "0"
+  DB_SYNC_WITH_ALTER_ENABLED: "0"
+  DB_SYNC_WITH_FORCE_ENABLED: "0"
+
+  SEARCH_HOST: "https://vpc-atlas-dc-opensearch-ptjvaqg2v5gwqqr22zo74iecnu.ap-south-1.es.amazonaws.com"
+  SEARCH_ENGINE: "OPENSEARCH"
+  SEARCH_REGION: "ap-south-1"
+  SEARCH_SERVICE_TYPE: "es"
+  SEARCH_SSL_REJECTUNAUTHORIZED: ""
+  SEARCH_USE_AWS_SIG_V4_SIGNER: ""
+  SEARCH_ENABLE_SNIFFING: ""
+  SEARCH_CLOUD_ID: ""
+
+  ATLAS_AUTH_SERVICE_ENDPOINT: http://auth-svc.atlas.svc.cluster.local:8080/auth
+  ATLAS_ADMIN_SERVICE_ENDPOINT: http://admin-svc.atlas.svc.cluster.local:8081/admin
+  ATLAS_PORTAL_SERVICE_ENDPOINT: http://portal-svc.atlas.svc.cluster.local:8082/portal
+  ATLAS_NOTIFICATION_SERVICE_ENDPOINT: http://noti-svc.atlas.svc.cluster.local:8083/notification
+  ATLAS_ANALYTICS_SERVICE_ENDPOINT: http://analytics-svc.atlas.svc.cluster.local:8084/analytics
+  ATLAS_GATEWAY_CONTROLLER_SERVICE_ENDPOINT: http://gc-svc.atlas.svc.cluster.local:8085/gatewaycontroller
+  ATLAS_HACKATHON_SERVICE_ENDPOINT: http://hackathon-svc.atlas.svc.cluster.local:8088/hackathon
+  ATLAS_VAULT_SERVICE_ENDPOINT: http://vault-svc.atlas.svc.cluster.local:8089/vault
+  ATLAS_AIAGENT_CONTROLLER_SERVICE_ENDPOINT: http://aic-svc.atlas.svc.cluster.local:8090/aiagentcontroller
+
+  NEXT_PUBLIC_APP_URL: https://developerportaldc.dipalilive.shop
+  COOKIE_DOMAIN: ".dipalilive.shop"
+  ALLOWED_REMOTE_PATTERNS: "https://atlasapimanagercdncd.dipalilive.shop"
+
+  FLUENT_BIT_TCP_HOST: "fluent-bit.atlas.svc.cluster.local"
+  FLUENT_BIT_TCP_PORT: "5170"
+
+  #dummy image for AI Agent to test
+  AI_AGENT_DOCKER_IMAGE: "jnovack/dummy:latest"

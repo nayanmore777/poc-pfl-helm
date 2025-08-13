@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-portal-depl
+  namespace: atlas
+  labels:
+    app: admin-portal-depl
+spec:
+  selector:
+    matchLabels:
+      app: admin-portal
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: admin-portal
+    spec:
+      serviceAccountName: admin-portal-sa
+      containers:
+        - name: admin-portal
+          image: 911167904591.dkr.ecr.ap-south-1.amazonaws.com/atlas-api-manager-console-service:ACCPOCDC-UAT-v960.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 7
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 300m
+              memory: 700Mi
+          env:
+            - name: TZ
+              value: Asia/Kolkata
+          volumeMounts:
+            - name: tzdata
+              mountPath: /usr/share/zoneinfo
+          ports:
+            - containerPort: 80
+              name: admin-portal-cp
+      volumes:
+        - name: tzdata
+          hostPath:
+            path: /usr/share/zoneinfo
+      restartPolicy: Always

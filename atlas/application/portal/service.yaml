@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal-svc # Service Name
+  namespace: atlas # Service Namespace
+  annotations: {}
+spec:
+  selector:
+    app: portal # Map the Service with the specified selected Pods
+  type: ClusterIP # Internal Service to be used by other PODs / Services only.
+  ports:
+    - name: portal-svc-port # Name of the PORT
+      port: 8082 # Service Port Number
+      targetPort: portal-port # Redirect to Application PORT
+      protocol: TCP # TCP Protocol

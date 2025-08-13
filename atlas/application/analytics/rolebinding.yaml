@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: analytics-rb
+  namespace: atlas
+subjects:
+  - kind: ServiceAccount
+    name: analytics-sa
+    namespace: atlas
+roleRef:
+  kind: Role
+  name: analytics-role
+  apiGroup: ""

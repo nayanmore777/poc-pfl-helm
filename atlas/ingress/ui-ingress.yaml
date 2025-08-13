@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: atlas-ui-ingress-dc
+  namespace: atlas
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: atlas-ui-ingress-dc-alb
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/target-group-attributes: load_balancing.algorithm.type=round_robin
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=4000,deletion_protection.enabled=true,routing.http.drop_invalid_header_fields.enabled=true,routing.http.x_amzn_tls_version_and_cipher_suite.enabled=true,deletion_protection.enabled=true
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/subnets: subnet-0ced7cc1734cf0d3a, subnet-0981ea9f3c531ff4b
+    alb.ingress.kubernetes.io/security-groups: sg-008a2b119414e2bc9
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:911167904591:certificate/99c765e8-72e9-43c2-86be-ee3c7d514c78
+    alb.ingress.kubernetes.io/tags: Environment=UAT,Owner=atlas.support@acc.ltd,Application=Atlas API Manager,Support=atlas.support@acc.ltd,Vendor=Applied Cloud Computing
+spec:
+  ingressClassName: alb
+  rules:
+    - host: developerportal.dipalilive.shop
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: devportal-svc
+                port:
+                  number: 8087
+    - host: atlasapimanagerconsole.dipalilive.shop
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-portal-svc
+                port:
+                  number: 80

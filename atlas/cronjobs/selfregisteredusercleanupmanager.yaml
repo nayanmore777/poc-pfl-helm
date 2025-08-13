@@ -1,0 +1,27 @@
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: self-registered-users-cleanup-manager-job
+  namespace: atlas
+spec:
+  concurrencyPolicy: Allow
+  failedJobsHistoryLimit: 7
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 30
+  suspend: false
+  schedule: "*/30 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - command:
+                - /bin/sh
+                - -ec
+                - "curl --location --request POST 'http://auth-svc.atlas.svc.cluster.local:8080/auth/v1/access-management/users/internal/expired-self-registered-users'
+                  --header 'x-atlas-client-id: Atlas-Developer-Portal-Microservice'
+                  --header 'x-atlas-client-secret: C?NPwXUW=Gc5pNsC?no9xnAr*cjX}3JN7>~-dc27Bv2sV+cWD3*9DH2'"
+              image: curlimages/curl:7.86.0
+              imagePullPolicy: IfNotPresent
+              name: self-registered-users-cleanup-manager
+          restartPolicy: OnFailure
