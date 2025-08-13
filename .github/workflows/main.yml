@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/deploy/templates
+            cd /home/ec2-user/deploy/
 
             # Install Helm if missing
             if ! command -v helm &> /dev/null; then
@@ -46,4 +46,4 @@ jobs:
             aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
 
             # Deploy chart
-            helm upgrade --install my-release . --namespace atlas --create-namespace
+            helm upgrade --install my-release ./templates --namespace atlas --create-namespace
