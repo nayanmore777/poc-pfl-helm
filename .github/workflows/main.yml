@@ -9,42 +9,38 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Pre-clone setup
-        run: |
-          echo "Switching to superuser..."
-          sudo su
-          echo "Creating directory /home/git-actions if it doesn't exist"
-          sudo mkdir -p /home/git-actions
-          sudo chown $USER:$USER /home/git-actions
-
-      - name: Checkout code from master branch
+      # Step 1: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      # Step 2: Copy atlas folder to Bastion
+      - name: Copy Helm manifests to Bastion
+        uses: appleboy/scp-action@v0.1.7
         with:
-          ref: main
-          path: /home/runner/work/poc-pfl-helm/atlas
+          host: 58.0.34.56
+          username: ec2-user  # Change if different
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          source: ./atlas
+          target: /home/ec2-user/deploy
 
-      - name: Verify Helm installation
-        run: |
-          if ! command -v helm &> /dev/null; then
-            echo "Helm not found. Installing Helm..."
-            curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-          else
-            echo "Helm is already installed."
-          fi
-          helm version
+      # Step 3: SSH into Bastion & Deploy Helm chart
+      - name: Deploy Helm chart on Bastion
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 58.0.34.56
+          username: ec2-user  # Change if different
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          script: |
+            set -e
+            cd /home/ec2-user/deploy/atlas
 
-      - name: Update kubeconfig
-        run: |
-          echo "Updating kubeconfig..."
-          # Example command - update as per your cluster context
-          aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
+            # Install Helm if not already installed
+            if ! command -v helm &> /dev/null; then
+              curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            fi
 
-      - name: Deploy Helm chart
-        run: |
-          echo "Deploying Helm chart..."
-          helm upgrade --install my-release ./atlas --namespace atlas
+            # Update kubeconfig for EKS cluster
+            aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
 
-      - name: Cleanup workspace
-        run: |
-          echo "Cleaning up..."
-          rm -rf /home/git-actions/*
+            # Deploy Helm chart
+            helm upgrade --install atlas-helm . --namespace atlas --create-namespace
