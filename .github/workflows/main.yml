@@ -16,15 +16,15 @@ jobs:
           repository: nayanmore777/poc-pfl-helm
           ref: main
 
-      # Step 2: Copy Helm chart (without nesting) to Bastion
+      # Step 2: Copy Helm chart to Bastion
       - name: Copy Helm chart to Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
           host: 3.110.134.202
           username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
-          source: templates/*   # copy contents, not the folder itself
-          target: /home/ec2-user/deploy/templates
+          source: templates
+          target: /home/ec2-user/deploy
 
       # Step 3: SSH into Bastion & Deploy Helm chart
       - name: Deploy Helm chart on Bastion
@@ -35,15 +35,12 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/deploy/templates
-
+            cd /home/ec2-user/deploy/
             # Install Helm if missing
             if ! command -v helm &> /dev/null; then
               curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
             fi
-
             # Update kubeconfig
             aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
-
             # Deploy chart
-            helm upgrade --install my-release . --namespace atlas --create-namespace
+            helm upgrade --install my-release ./templates --namespace atlas --create-namespace
