@@ -23,7 +23,7 @@ jobs:
           host: 3.110.134.202
           username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
-          source: atlas
+          source: templets
           target: /home/ec2-user/deploy
 
       # Step 3: SSH into Bastion & Deploy Helm chart
@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/deploy/atlas
+            cd /home/ec2-user/deploy/templets
 
             # Install Helm if missing
             if ! command -v helm &> /dev/null; then
