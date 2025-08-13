@@ -16,14 +16,14 @@ jobs:
           repository: nayanmore777/poc-pfl-helm
           ref: main
 
-      # Step 2: Copy atlas folder to Bastion
-      - name: Copy Helm manifests to Bastion
+      # Step 2: Copy Helm chart to Bastion
+      - name: Copy Helm chart to Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
           host: 3.110.134.202
           username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
-          source: templets
+          source: templates
           target: /home/ec2-user/deploy
 
       # Step 3: SSH into Bastion & Deploy Helm chart
@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/deploy/templets
+            cd /home/ec2-user/deploy/templates
 
             # Install Helm if missing
             if ! command -v helm &> /dev/null; then
