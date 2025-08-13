@@ -20,7 +20,7 @@ jobs:
       - name: Copy Helm manifests to Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 58.0.34.56
+          host: 3.110.134.202
           username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
           source: atlas
