@@ -30,7 +30,7 @@ jobs:
       - name: Deploy Helm chart on Bastion
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 58.0.34.56
+          host: 3.110.134.202
           username: ec2-user
           key: ${{ secrets.BASTION_SSH_KEY }}
           script: |
