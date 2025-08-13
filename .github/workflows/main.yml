@@ -1,0 +1,50 @@
+name: Helm Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pre-clone setup
+        run: |
+          echo "Switching to superuser..."
+          sudo su
+          echo "Creating directory /home/git-actions if it doesn't exist"
+          sudo mkdir -p /home/git-actions
+          sudo chown $USER:$USER /home/git-actions
+
+      - name: Checkout code from master branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: /home/runner/work/poc-pfl-helm/atlas
+
+      - name: Verify Helm installation
+        run: |
+          if ! command -v helm &> /dev/null; then
+            echo "Helm not found. Installing Helm..."
+            curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          else
+            echo "Helm is already installed."
+          fi
+          helm version
+
+      - name: Update kubeconfig
+        run: |
+          echo "Updating kubeconfig..."
+          # Example command - update as per your cluster context
+          aws eks update-kubeconfig --region ap-south-1 --name atlas-dc-eks-cluster
+
+      - name: Deploy Helm chart
+        run: |
+          echo "Deploying Helm chart..."
+          helm upgrade --install my-release ./atlas --namespace atlas
+
+      - name: Cleanup workspace
+        run: |
+          echo "Cleaning up..."
+          rm -rf /home/git-actions/*
